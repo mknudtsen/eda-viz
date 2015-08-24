@@ -1,0 +1,17 @@
+{
+    "contents" : "\n# This is the user-interface definition of a Shiny web application.\n# You can find out more about building applications with Shiny here:\n#\n# http://shiny.rstudio.com\n#\n\nlibrary(shiny)\n\nshinyUI(navbarPage(\"Dora\",\n                   \n    tabPanel(\"Manage Data\",\n        fluidRow(\n            column(3,\n                wellPanel(\n                    #fileInput('file1', 'Choose CSV File',\n                    #accept = c('text/csv', \n                    #           'text/comma-separated-values,text/plain', \n                    #           '.csv')),\n                    #tags$hr(),\n                    #checkboxInput('header', 'Header', TRUE),\n                    #radioButtons('sep', 'Separator',\n                    #            c(Comma = ',',\n                    #            Semicolon = ';',\n                    #            Tab = '\\t'),\n                    #            ','),\n                    #tags$hr(),\n                    uiOutput('ui_datasets'),\n                    uiOutput('ui_load'),\n                    tags$hr(),\n                    uiOutput(\"varlist_load\")\n                    \n                )\n            ),\n\n    # Show a plot of the generated distribution\n            column(9,\n                tabsetPanel(\n                    tabPanel('Load', tableOutput('contents')),\n                    tabPanel('View', verbatimTextOutput('summary')),\n                    tabPanel('Summary', plotOutput('plot'))\n                )\n            )\n        )\n    ),\n    \n    tabPanel('Univariate Analysis',\n        fluidRow(\n            \n            column(3, wellPanel(\n              uiOutput('varlist_select'),\n              tags$hr(),\n              uiOutput('plot_selections')\n            )),\n        \n            \n            column(9,\n                tabsetPanel(\n                    id = 'chart_type',\n                    tabPanel('Histogram', plotOutput('histogram')),\n                    tabPanel('Box Plot', plotOutput('boxplot')),\n                    tabPanel('Bar Plot', plotOutput('barplot')),\n                    tabPanel('Q-Q Plot', plotOutput('qqplot'))\n                )\n            )\n        )\n    ),\n    \n    tabPanel(\"Multivariate Analysis\",\n        sidebarLayout(\n            sidebarPanel(\n                \n            ),\n            \n            mainPanel(\n                \n            )\n        )\n    )\n    \n))\n\n",
+    "created" : 1437504768076.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2111607413",
+    "id" : "C80ACE5D",
+    "lastKnownWriteTime" : 1437781654,
+    "path" : "~/development/shiny/eda/ui.R",
+    "project_path" : "ui.R",
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "type" : "r_source"
+}
