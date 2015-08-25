@@ -14,14 +14,7 @@ r_data <- reactiveValues()
 
 shinyServer(function(input, output) {
 
-    #filedata <- reactive({
-    #    infile <- input$uploadfile
-    #    if (is.null(infile)) return()
-    #    read.csv(infile$datapath, header = input$header, sep = input$sep)
-    #})
-    
-    
-############################################################################################################
+######################################################## LOAD DATA UI
         
     output$ui_file_upload <- renderUI({
         
@@ -39,8 +32,6 @@ shinyServer(function(input, output) {
     
     output$ui_load <- renderUI({
         list(
-          #wellPanel(
-            
             radioButtons(inputId = "data_type", label = "Load data",
                          c("rda" = "rda", "csv" = "csv"),
                          selected = "rda", inline = TRUE),
@@ -52,9 +43,11 @@ shinyServer(function(input, output) {
                            ',', inline = FALSE)
             ),
             uiOutput("ui_file_upload")
-          #)
         )
     })
+################### END
+
+######################################################## FUNCTIONS TO LOAD AND MANAGE DATA
     
     observe({
         in_file <- input$uploadfile
@@ -92,11 +85,9 @@ shinyServer(function(input, output) {
       r_data[['datasetlist']] <- c(objname, r_data[['datasetlist']]) %>% unique 
     }
     
-    
-    
     .getdata <- reactive({
         validate(
-            need(input$dataset != "", "Please load a tidy data set")
+            need(input$dataset != "", "Please load a tidy data set (.rda or .csv)")
         )
         if (is.null(input$dataset)) return()
         r_data[[input$dataset]]
@@ -127,17 +118,14 @@ shinyServer(function(input, output) {
                         selected = "", multiple = FALSE)
         )
     })
+################### END
     
-############################################################################################################
+######################################################## VARIABLE SELECT
     
     output$varlist_load <- renderUI({
-        #df <- filedata()
-        #if (is.null(df)) return(NULL)
-        #items <- names(df)
-        #names(items) <- items
         df <- .getdata()
         items <- names(df)
-        #names(items) <- items
+        names(items) <- items
         checkboxGroupInput(inputId = "varlist",
                            label = "Variables", 
                            choices = items, 
@@ -146,53 +134,70 @@ shinyServer(function(input, output) {
     
     output$varlist_select <- renderUI({
         df <- .getdata()
-        if (is.null(df)) return()
-        # Limit df to 'varlist' from load
         df <- df[, input$varlist]
-        # Retrieve variable options from column names
-        items <- names(df)
-        names(items) <- items
-        # UI select dropdown for variable selection
         selectInput(inputId = 'var_select',
                     label = 'Variable',
-                    choices = items,
+                    choices = names(df),
                     selected = NULL)
     })
     
+    output$xvar_select <- renderUI({
+        df <- .getdata()
+        df <- df[, input$varlist]
+        selectInput(inputId = 'xvar',
+                    label = 'X Variable',
+                    choices = names(df),
+                    selected = NULL)
+    })
+    
+    output$yvar_select <- renderUI({
+        df <- .getdata()
+        df <- df[, input$varlist]
+        selectInput(inputId = 'yvar',
+                    label = 'Y Variable',
+                    choices = names(df),
+                    selected = NULL)
+    })
+################### END
+    
+######################################################## MANAGE DATA OUTPUT
+    
     output$contents <- renderTable({
         df <- .getdata()
-        if (is.null(df)) return(NULL)
+        #if (is.null(df)) return(NULL)
         return(df[1:20, input$varlist])
     })
     
     output$dataTable <- renderDataTable({
         df <- .getdata()
-        if (is.null(df)) return(NULL)
+        #if (is.null(df)) return(NULL)
         datatable(df[, input$varlist])
     })
     
     output$summary <- renderPrint({
         df <- .getdata()
-        if (is.null(df)) return(NULL)
+        #if (is.null(df)) return(NULL)
         summary(df[, input$varlist])
     })
     
     output$str <- renderPrint({
         df <- .getdata()
-        if (is.null(df)) return(NULL)
+        #if (is.null(df)) return(NULL)
         str(df[, input$varlist])
     })
     
     output$plot <- renderPlot({
         df <- .getdata()
-        if (is.null(df)) return(NULL)
+        #if (is.null(df)) return(NULL)
         df <- df[, input$varlist]
         ggpairs(df[, sapply(df, is.integer) | sapply(df, is.numeric)])    
     })
+################### END
+
+######################################################## UNIVARIATE PLOT OUTPUT   
     
     output$histogram <- renderPlot({
         df <- .getdata()
-        if (is.null(df)) return(NULL)
         hist(df[, input$var_select], 
              probability = TRUE, 
              breaks = as.numeric(input$n_breaks),
@@ -213,7 +218,6 @@ shinyServer(function(input, output) {
     
     output$boxplot <- renderPlot({
         df <- .getdata()
-        if (is.null(df)) return(NULL)
         boxplot(df[, input$var_select])
         if (input$horizontal) {
           boxplot(df[, input$var_select],
@@ -223,15 +227,29 @@ shinyServer(function(input, output) {
     
     output$barplot <- renderPlot({
         df <- .getdata()
-        if (is.null(df)) return()
         var_freq <- table(df[, input$var_select])
         barplot(height = var_freq,
                 ylab = 'Count')
+        if (input$horizontal) {
+            barplot(height = var_freq,
+                    xlab = 'Count',
+                    horiz = TRUE,
+                    las = 1)
+        }
     })
+    
+    output$qqplot <- renderPlot({
+        df <- .getdata()
+        x <- df[, input$var_select]
+        qqnorm(x); qqline(x)
+    })
+################### END
+    
+######################################################## UNIVARIATE PLOT UI
     
     output$plot_selections <- renderUI({
         df <- .getdata()
-        if (is.null(df)) return()
+        df <- df[, input$varlist]
         if (is.null(input$chart_type)) return()
         
         # Depending on input$chart_type, we'll generate a 
@@ -239,8 +257,8 @@ shinyServer(function(input, output) {
         # and send to the client
         switch(input$chart_type,
           'Histogram' = {
+              
               list(
-              # UI select dropdown for number of bins
                 selectInput(inputId = 'n_breaks',
                             label = 'Bins',
                             choices = c(5, 10, 20, 35, 50),
@@ -269,10 +287,55 @@ shinyServer(function(input, output) {
                                 label = 'Horizontal',
                                 value = FALSE)
               )
+          },
+          'Normal Q-Q Plot' = {
+
+              list(
+
+              )
           }
       )
+    
     })
+################### END
 
+######################################################## MULTIVARIATE PLOT UI
+    
+    output$plot_selections_multi <- renderUI({
+        df <- .getdata()
+        df <- df[, input$varlist]
+        if (is.null(input$chart_type_multi)) return()
+        
+        switch(input$chart_type_multi,
+               'Scatter Plot' = {
+                   list(
+                       selectInput(inputId = 'color',
+                                   label = 'Color',
+                                   choices = c("", names(df)),
+                                   selected = NULL),
+                       checkboxInput(inputId = 'smooth',
+                                     label = 'Smooth',
+                                     value = FALSE),
+                       checkboxInput(inputId = 'jitter',
+                                     label = 'Jitter',
+                                     value = FALSE)
+                   )
+               }
+        )
+    })
+    
+######################################################## MULTIVARIATE PLOT OUTPUT
+    
+    output$scatterplot <- renderPlot({
+        p <- ggplot(.getdata(), aes_string(x=input$xvar, y=input$yvar)) + geom_point()
+        if (input$color != '') 
+            p <- p + aes_string(color=input$color)
+        if (input$jitter) 
+            p <- p + geom_jitter()
+        if (input$smooth) 
+            p <- p + geom_smooth()
+        print(p)
+    })
 })
 
 

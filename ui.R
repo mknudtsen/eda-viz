@@ -63,15 +63,19 @@ shinyUI(navbarPage("EDA",
                 tabsetPanel(
                     id = 'chart_type',
                     tabPanel('Histogram', 
+                             br(),
                              plotOutput('histogram', height = 650)
                              ),
                     tabPanel('Box Plot', 
+                             br(),
                              plotOutput('boxplot', height = 650)
                              ),
                     tabPanel('Bar Plot', 
+                             br(),
                              plotOutput('barplot', height = 650)
                              ),
-                    tabPanel('Q-Q Plot', 
+                    tabPanel('Normal Q-Q Plot', 
+                             br(),
                              plotOutput('qqplot', height = 650)
                              )
                 )
@@ -82,11 +86,22 @@ shinyUI(navbarPage("EDA",
     tabPanel("Multivariate Analysis",
         fluidRow(
             
-            column(3, wellPanel()),
+            column(3, wellPanel(
+                uiOutput('xvar_select'),
+                uiOutput('yvar_select'),
+                tags$hr(),
+                uiOutput('plot_selections_multi')
+            )),
             
             column(9, 
-                   tabsetPanel()
-                   )
+                tabsetPanel(
+                    id = 'chart_type_multi',
+                    tabPanel('Scatter Plot',
+                             br(),
+                             plotOutput('scatterplot', height = 650)
+                             )
+                )
+            )
         )
     )
     
