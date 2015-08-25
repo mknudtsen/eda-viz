@@ -1,15 +1,10 @@
 
-# This is the server logic for a Shiny web application.
-# You can find out more about building applications with Shiny here:
-#
-# http://shiny.rstudio.com
-#
-
 library(shiny)
 library(dplyr)
 library(ggplot2)
 library(GGally)
 library(tableplot)
+library(DT)
 
 options(shiny.maxRequestSize = 25*1024^2)
 options(shiny.trace = TRUE)
@@ -26,8 +21,7 @@ shinyServer(function(input, output) {
     #})
     
     
-
-############### NEW -- Adapted from Radiant -- #####################
+############################################################################################################
         
     output$ui_file_upload <- renderUI({
         
@@ -53,7 +47,7 @@ shinyServer(function(input, output) {
             conditionalPanel(condition = "input.data_type == 'csv'",
               with(tags, table(td(checkboxInput('header', 'Header', TRUE)),
                                td(HTML("&nbsp;&nbsp")),
-                               td(checkboxInput('str_as_factor', 'Factorize', TRUE)))),
+                               td(checkboxInput('str_as_factor', 'Str. as Factor', TRUE)))),
               radioButtons('sep', 'Separator', c(Comma = ',', Semicolon = ';', Tab = '\t'),
                            ',', inline = FALSE)
             ),
@@ -101,6 +95,9 @@ shinyServer(function(input, output) {
     
     
     .getdata <- reactive({
+        validate(
+            need(input$dataset != "", "Please load a tidy data set")
+        )
         if (is.null(input$dataset)) return()
         r_data[[input$dataset]]
     })
@@ -131,7 +128,7 @@ shinyServer(function(input, output) {
         )
     })
     
-############### NEW -- Adapted from Radiant -- #####################
+############################################################################################################
     
     output$varlist_load <- renderUI({
         #df <- filedata()
@@ -140,7 +137,7 @@ shinyServer(function(input, output) {
         #names(items) <- items
         df <- .getdata()
         items <- names(df)
-        names(items) <- items
+        #names(items) <- items
         checkboxGroupInput(inputId = "varlist",
                            label = "Variables", 
                            choices = items, 
@@ -148,7 +145,7 @@ shinyServer(function(input, output) {
     })
     
     output$varlist_select <- renderUI({
-        df <- filedata()
+        df <- .getdata()
         if (is.null(df)) return()
         # Limit df to 'varlist' from load
         df <- df[, input$varlist]
@@ -165,24 +162,36 @@ shinyServer(function(input, output) {
     output$contents <- renderTable({
         df <- .getdata()
         if (is.null(df)) return(NULL)
-        return(df[, input$varlist])
+        return(df[1:20, input$varlist])
+    })
+    
+    output$dataTable <- renderDataTable({
+        df <- .getdata()
+        if (is.null(df)) return(NULL)
+        datatable(df[, input$varlist])
     })
     
     output$summary <- renderPrint({
-        df <- filedata()
+        df <- .getdata()
         if (is.null(df)) return(NULL)
         summary(df[, input$varlist])
     })
     
+    output$str <- renderPrint({
+        df <- .getdata()
+        if (is.null(df)) return(NULL)
+        str(df[, input$varlist])
+    })
+    
     output$plot <- renderPlot({
-        df <- filedata()
+        df <- .getdata()
         if (is.null(df)) return(NULL)
         df <- df[, input$varlist]
         ggpairs(df[, sapply(df, is.integer) | sapply(df, is.numeric)])    
     })
     
     output$histogram <- renderPlot({
-        df <- filedata()
+        df <- .getdata()
         if (is.null(df)) return(NULL)
         hist(df[, input$var_select], 
              probability = TRUE, 
@@ -203,7 +212,7 @@ shinyServer(function(input, output) {
     })
     
     output$boxplot <- renderPlot({
-        df <- filedata()
+        df <- .getdata()
         if (is.null(df)) return(NULL)
         boxplot(df[, input$var_select])
         if (input$horizontal) {
@@ -213,7 +222,7 @@ shinyServer(function(input, output) {
     })
     
     output$barplot <- renderPlot({
-        df <- filedata()
+        df <- .getdata()
         if (is.null(df)) return()
         var_freq <- table(df[, input$var_select])
         barplot(height = var_freq,
@@ -221,7 +230,7 @@ shinyServer(function(input, output) {
     })
     
     output$plot_selections <- renderUI({
-        df <- filedata()
+        df <- .getdata()
         if (is.null(df)) return()
         if (is.null(input$chart_type)) return()
         

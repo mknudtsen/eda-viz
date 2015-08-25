@@ -6,25 +6,15 @@
 #
 
 library(shiny)
+library(DT)
 
-shinyUI(navbarPage("Dora",
+shinyUI(navbarPage("EDA",
                    
     tabPanel("Manage Data",
         fluidRow(
             column(3,
                 wellPanel(
-                    #fileInput('file1', 'Choose CSV File',
-                    #accept = c('text/csv', 
-                    #           'text/comma-separated-values,text/plain', 
-                    #           '.csv')),
-                    #tags$hr(),
-                    #checkboxInput('header', 'Header', TRUE),
-                    #radioButtons('sep', 'Separator',
-                    #            c(Comma = ',',
-                    #            Semicolon = ';',
-                    #            Tab = '\t'),
-                    #            ','),
-                    #tags$hr(),
+
                     uiOutput('ui_datasets'),
                     uiOutput('ui_load'),
                     tags$hr(),
@@ -36,9 +26,24 @@ shinyUI(navbarPage("Dora",
     # Show a plot of the generated distribution
             column(9,
                 tabsetPanel(
-                    tabPanel('Load', tableOutput('contents')),
-                    tabPanel('View', verbatimTextOutput('summary')),
-                    tabPanel('Summary', plotOutput('plot'))
+                    
+                    tabPanel('Preview', 
+                             br(),
+                             tableOutput('contents')
+                             ),
+                    tabPanel('Explore',
+                             br(),
+                             dataTableOutput('dataTable')),
+                    tabPanel('Summary', 
+                             h4("Data Structure"),
+                             verbatimTextOutput('str'),
+                             h4("Summary"),
+                             verbatimTextOutput("summary")
+                             ),
+                    tabPanel('Correlations', 
+                             br(),
+                             plotOutput('plot', height = 650)
+                             )
                 )
             )
         )
@@ -57,24 +62,31 @@ shinyUI(navbarPage("Dora",
             column(9,
                 tabsetPanel(
                     id = 'chart_type',
-                    tabPanel('Histogram', plotOutput('histogram')),
-                    tabPanel('Box Plot', plotOutput('boxplot')),
-                    tabPanel('Bar Plot', plotOutput('barplot')),
-                    tabPanel('Q-Q Plot', plotOutput('qqplot'))
+                    tabPanel('Histogram', 
+                             plotOutput('histogram', height = 650)
+                             ),
+                    tabPanel('Box Plot', 
+                             plotOutput('boxplot', height = 650)
+                             ),
+                    tabPanel('Bar Plot', 
+                             plotOutput('barplot', height = 650)
+                             ),
+                    tabPanel('Q-Q Plot', 
+                             plotOutput('qqplot', height = 650)
+                             )
                 )
             )
         )
     ),
     
     tabPanel("Multivariate Analysis",
-        sidebarLayout(
-            sidebarPanel(
-                
-            ),
+        fluidRow(
             
-            mainPanel(
-                
-            )
+            column(3, wellPanel()),
+            
+            column(9, 
+                   tabsetPanel()
+                   )
         )
     )
     
