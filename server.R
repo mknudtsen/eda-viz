@@ -5,6 +5,7 @@ library(ggplot2)
 library(GGally)
 library(tableplot)
 library(DT)
+library(plyr)
 
 options(shiny.maxRequestSize = 25*1024^2)
 options(shiny.trace = TRUE)
@@ -78,7 +79,7 @@ shinyServer(function(input, output) {
       if (ext == 'csv') {
           r_data[[objname]] <- try(read_delim(ufile, sep, col_names = header), silent = TRUE) %>%
           {if (is(., 'try-error'))
-            try(read.table(ufile, header = header, sep = sep, stringsAsFactors = FALSE), silent = TRUE)
+            try(read.table(ufile, header = header, sep = sep, stringsAsFactors = str_as_factor), silent = TRUE)
            else . } %>% as.data.frame
       }
       
@@ -320,6 +321,20 @@ shinyServer(function(input, output) {
                                      label = 'Jitter',
                                      value = FALSE)
                    )
+               },
+               'Box Plot' = {
+                   list(
+                       checkboxInput(inputId = 'horizontal',
+                                     label = 'Horizontal',
+                                     value = FALSE)
+                   )
+               },
+               'Bar Plot' = {
+                   list(
+                       checkboxInput(inputId = 'horizontal',
+                                     label = 'Horizontal',
+                                     value = FALSE)
+                   )
                }
         )
     })
@@ -327,6 +342,11 @@ shinyServer(function(input, output) {
 ######################################################## MULTIVARIATE PLOT OUTPUT
     
     output$scatterplot <- renderPlot({
+        df <- .getdata()
+        validate(
+            need(!is.discrete(df[,input$xvar]), "Please select a continuous variable for X"),
+            need(!is.discrete(df[,input$yvar]), "Please select a continuous variable for Y")
+        )
         p <- ggplot(.getdata(), aes_string(x=input$xvar, y=input$yvar)) + geom_point()
         if (input$color != '') 
             p <- p + aes_string(color=input$color)
@@ -334,6 +354,34 @@ shinyServer(function(input, output) {
             p <- p + geom_jitter()
         if (input$smooth) 
             p <- p + geom_smooth()
+        print(p)
+    })
+    
+    output$boxplot_multi <- renderPlot({
+        df <- .getdata()
+        validate(
+            need(is.discrete(df[,input$xvar]), "Please select a factor (discrete variable) for X")
+        )
+        p <- ggplot(df, aes_string(x=input$xvar, y=input$yvar)) + geom_boxplot()
+        if (input$horizontal)
+            p <- p + coord_flip()
+        print(p)
+    })
+    
+    output$barplot_multi <- renderPlot({
+        df <- .getdata()
+        validate(
+            need(is.discrete(df[,input$xvar]), "Please select a factor (discrete variable) for X")
+        )
+        p <- ggplot(df, aes_string(x=input$xvar, y=input$yvar)) + geom_bar(stat="Identity")
+        if (input$horizontal) 
+            p <- p + coord_flip()
+        print(p)
+    })
+    
+    output$time_series <- renderPlot({
+        df <- .getdata()
+        p <- ggplot(df, aes_string(x=input$xvar, y=input$yvar)) + geom_line()
         print(p)
     })
 })

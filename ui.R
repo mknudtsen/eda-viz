@@ -35,6 +35,7 @@ shinyUI(navbarPage("EDA",
                              br(),
                              dataTableOutput('dataTable')),
                     tabPanel('Summary', 
+                             br(),
                              h4("Data Structure"),
                              verbatimTextOutput('str'),
                              h4("Summary"),
@@ -49,7 +50,7 @@ shinyUI(navbarPage("EDA",
         )
     ),
     
-    tabPanel('Univariate Analysis',
+    tabPanel('Univariate - Distributions',
         fluidRow(
             
             column(3, wellPanel(
@@ -83,7 +84,7 @@ shinyUI(navbarPage("EDA",
         )
     ),
     
-    tabPanel("Multivariate Analysis",
+    tabPanel("Multivariate - Relationships",
         fluidRow(
             
             column(3, wellPanel(
@@ -99,6 +100,18 @@ shinyUI(navbarPage("EDA",
                     tabPanel('Scatter Plot',
                              br(),
                              plotOutput('scatterplot', height = 650)
+                             ),
+                    tabPanel('Box Plot', 
+                             br(),
+                             plotOutput('boxplot_multi', height = 650)
+                             ),
+                    tabPanel('Bar Plot',
+                             br(),
+                             plotOutput('barplot_multi', height = 650)
+                             ),
+                    tabPanel('Time Series',
+                             br(),
+                             plotOutput('time_series', height = 650)
                              )
                 )
             )
