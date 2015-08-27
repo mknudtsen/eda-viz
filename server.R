@@ -165,31 +165,26 @@ shinyServer(function(input, output) {
     
     output$contents <- renderTable({
         df <- .getdata()
-        #if (is.null(df)) return(NULL)
         return(df[1:20, input$varlist])
     })
     
     output$dataTable <- renderDataTable({
         df <- .getdata()
-        #if (is.null(df)) return(NULL)
         datatable(df[, input$varlist])
     })
     
     output$summary <- renderPrint({
         df <- .getdata()
-        #if (is.null(df)) return(NULL)
         summary(df[, input$varlist])
     })
     
     output$str <- renderPrint({
         df <- .getdata()
-        #if (is.null(df)) return(NULL)
         str(df[, input$varlist])
     })
     
     output$plot <- renderPlot({
         df <- .getdata()
-        #if (is.null(df)) return(NULL)
         df <- df[, input$varlist]
         ggpairs(df[, sapply(df, is.integer) | sapply(df, is.numeric)])    
     })
